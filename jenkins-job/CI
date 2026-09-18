@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+
+    // Определяем параметры, которые появятся в интерфейсе при запуске
+    parameters {
+        // Это и есть та самая «галочка» с названием declarative_checksum
+        booleanParam(
+            name: 'declarative_checksum',
+            defaultValue: false,
+            description: 'Обновить конфигурацию из репозитория (checksum)'
+        )
+    }
+
+    stages {
+        stage('Check Parameter') {
+            steps {
+                script {
+                    if (params.declarative_checksum) {
+                        echo "✅ Галочка 'declarative_checksum' включена. Выполняется обновление конфигурации..."
+                        // Здесь можно разместить логику обновления, например:
+                        // sh 'git pull origin main'
+                    } else {
+                        echo "⏹️ Галочка 'declarative_checksum' выключена. Обновление пропущено."
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        // Этот блок выполняется всегда после завершения всех стадий
+        always {
+            script {
+                // Принудительно «валим» сборку, чтобы она завершилась со статусом FAILURE
+                currentBuild.result = 'FAILURE'
+                // Можно также добавить сообщение в лог для ясности
+                echo "🔥 Сборка принудительно завершена с ошибкой (FAILURE)."
+            }
+        }
+    }
+}
